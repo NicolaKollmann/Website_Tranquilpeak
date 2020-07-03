@@ -1,0 +1,265 @@
+---
+title: Maximum Likelihood Estimation of the Spatial Durbin Model
+author: Nicola Kollmann
+date: '2020-07-03'
+categories:
+  - Econometrics
+tags:
+  - R code
+  - spatial
+output: blogdown::html_page
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+# packages
+library(rgdal)
+library(tidyverse)
+library(broom)
+library(kableExtra)
+library(pixiedust)
+library(spdep)
+library(leaflet)
+```
+This is an R Markdown document that documents my solution to the first assignment in the "Regression Analysis for Spatial Data" course. The course was taught by Professor Dr. Roland Füss and Dr. Zeno Adams as part of the GSERM Summer School 2020.
+
+a) Use a maximum likelihood framework to estimate the Spatial Durbin Model $Y = \rho WY + X\beta + \lambda WX + \epsilon$, with house price growth as the dependent variable $Y$, and an intercept and the growth rate in the housing stock as the regressors $X$. Use the same neighborhood weight matrix $W$ for both, $Y$ and $X$. Interpret the economic impact of the results. *Hint*: check for NAs in the data using `is.na()` and replace them with zeros using `ifelse()` or `replace()`.
+
+#### Load the dataset of house prices in Switzerland
+
+The first step in any data analysis is to set the working directory and load the necessary data into the dataframe `dat1`. To get a first idea about the data set we also provide a short glimpse into the first 6 observations below. As one can see we are dealing with cross-sectional data of the 106 Swiss MS regions (MS = mobilité spatiale) in the year 2009.  
+
+```{r, include=FALSE}
+dat1 <- read.table("CH_Daten.txt", header = TRUE) # regional dataset
+```
+
+
+```{r, echo=FALSE}
+kable(head(dat1)) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+Following the hint from the exercise description I check for missing values, but it seems like they have been taken care of beforehand in the data cleaning process.
+```{r}
+any(is.na(dat1))
+```
+
+The variables of interest in the analysis are `dlhp` ($Y$) and `dlstock` ($X$). The former is the difference in logged house prices, which represents the house price growth and the latter is the difference in logged housing stock, which corresponds to the growth rate in the housing stock. Due to their transformations we have to interpret the results accordingly as percentage changes.  
+
+#### Create the weight matrix $W$
+
+In order to create the weight matrix $W$, we need a package that can read the shape file for Switzerland. This package is called `rgdal` and I load it into my work space with the following command: `library(rgdal)`. 
+
+Now it only needs one command to read the shapefile into the working environment.
+```{r}
+CH <- readOGR(".", "MS_Gebiete")
+```
+
+With this shapefile it is fairly easy to construct a k-nearest neighbor weight matrix. Following the logic from the tutorial sessions I will work with $k=6$ and also change the object class from `knn` to `nb` and finally to `matrix`. These steps require yet another package called `spdep`, which is also loaded into my work space. At the end of the following code we are left with the weight matrix $W$ in the appropriate object class `matrix`.
+
+```{r}
+nearest.six <- knearneigh(coordinates(CH), k = 6, RANN = FALSE)
+class(nearest.six)
+nearest.six2 <- knn2nb(nearest.six)
+class(nearest.six2)
+W <- nb2mat(nearest.six2)
+class(W)
+```
+
+It is illustrative to look at a small excerpt from the weight matrix to check what these commands have produced so far. Otherwise the process of generating the weight matrix remains kind of a black box.
+
+```{r, echo=FALSE}
+colnames(W) <- dat1$MS.name
+rownames(W) <- dat1$MS.name
+W[1:5,1:5]
+```
+
+The weight matrix is a sparse matrix with many 0 entries. Especially, the entries on the main diagonal have to be 0, due to the fact that no region can be a direct neighbor of itself. All entries that are non-zero correspond to the choice of $k$. In this exercise the choice of $k=6$ put an entry of 1 into the combination of regions that are k-nearest neighbors. However, the weight matrix needs to be transformed into a row-stochastic matrix, where all rows sum up to 1. This transformation changes all non-zero entries to $\frac{1}{6} = 0.1666667$.
+
+#### Spatial Durbin Model (SDM)
+
+In the tutorial sessions we have seen three methods of estimating a spatial model using the maximum likelihood framework:
+
+1. Full Maximum Likelihood  
+2. Concentrated Maximum Likelihood  
+3. using the `spdep` package  
+
+In this assignment I will show the full maximum likelihood estimation and also the results from the `spdep` package to confirm my approach. 
+
+##### Setup
+
+To set up the maximum likelihood estimation, I need to assign the variables. As specified by the exercise description, the dependent variable $Y$ is the growth rate of housing prices and the growth rate in the housing stock enters into the model as the regressor $X$, together with an intercept. Moreover, since we want to estimate a Spatial Durbin Model we also assign a spatial lag to the growth rate in the housing stock $WX$. Intuitively, I expect that the growth in the housing stock has a negative impact on the growth in house prices, due to more supply. It would, however, be interesting to include the vacancy rate into the model for further investigation.   
+
+```{r}
+Y <- as.matrix(dat1$dlhp)
+colnames(Y) <- "DLHP"
+X <- cbind(1, dat1$dlstock)
+colnames(X) <- c("intercept", "DLSTOCK")
+WX <- W%*%dat1$dlstock
+```
+
+##### Full Maximum Likelihood Estimation
+
+First, we need to specify the likelihood function that we want to maximize.
+
+```{r}
+normal.lik1 <- function(theta, y, X) {
+  beta <- theta[1:2]
+  sigma <- theta[3]
+  rho <- theta[4]
+  lambda <- theta[5]
+  n <- nrow(X)
+  In <- diag(n) 
+  # log-likelihood:
+  logl <- log(det(In - rho*W)) - (n/2)*log(2*pi*sigma^2) - sum((1/(2*sigma^2))*(y - rho*W%*%y - X%*%beta - lambda*WX)^2)
+  return(-logl)
+}
+```
+
+The corresponding maximum likelihood is then easy to find with an optimizer, where we only need to specify the starting values and plug in the assigned variables.
+
+```{r, warning=FALSE, message=FALSE}
+fit.sdm <- optim(c(1, 1, 1, 0.5, 0.5), normal.lik1, y = Y, X = X, method = "BFGS", 
+              control = list(maxit = 1000, trace = TRUE))
+```
+
+```{r, include=FALSE}
+par.fmle <- as.data.frame(fit.sdm$par)
+par.fmle[6, ] <- -(fit.sdm$value)
+par.fmle <- round(par.fmle, 3)
+```
+
+
+##### Spatial Regression Package 
+
+To confirm the findings from the previous section I estimate the same model with the spatial regression package `spdep`. 
+
+```{r, warning=FALSE, message=FALSE}
+W_listw <- nb2listw(nearest.six2)
+fit.sdm <- lagsarlm(dlhp ~ dlstock, W_listw, data = dat1, Durbin = TRUE, method = "eigen", quiet = TRUE)
+summary(fit.sdm)
+```
+
+```{r, include=FALSE}
+rho.sdm <- fit.sdm$rho
+ll.sdm <- fit.sdm$LL
+intercept.sdm <- fit.sdm$coefficients[1]
+beta.sdm <- fit.sdm$coefficients[2]
+lambda.sdm <- fit.sdm$coefficients[3]
+par.sdm <- round(c(intercept.sdm, beta.sdm, NA, rho.sdm, lambda.sdm, ll.sdm), 3)
+par.table <- cbind(par.fmle, par.sdm)
+colnames(par.table) <- c("Full Maximum Likelihood Estimation", "Estimation with package")
+rownames(par.table) <- c("intercept", "beta", "sigma", "rho", "lambda", "LogLikelihood")
+```
+
+The following table shows that both estimation methods produce the same results.
+
+
+```{r, echo=FALSE}
+kable(par.table[-3, ], align = "c") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+
+#### Economic Interpretation
+
+First of all, since we are especially interested in the spatial dependence in the model it is important to mention that $\rho$ is not particularly high with a value of 0.311. It seems like there is some spatial dependence in the growth rate of house prices, but it does not seem to be the main effect. This is important to keep in mind when we look at the different average effects in the next step of the analysis, since it implies a rather low average indirect effect. The coefficient of -0.249 for `dlstock` can be interpreted as the elasticity between the growth rate in house prices and the growth rate in housing stock. Thus, a 1% increase in the growth rate of housing prices results in a 0.249% decrease in the growth rate of house prices. This is in line with my expectations stated earlier. Moreover, the average growth rate in house prices in our data set is around 3.1%. A 0.249% decrease, therefore, approximately corresponds to a 8% drop in house price growth. However, it needs to be stressed that this only corresponds to the **average direct effect**, without taking into account indirect effects such as spillover and feedback effects. In order to make more sophisticated statements with regard to these effects, we next compute them separately.  
+
+
+b) Compute the direct, indirect, and total impacts of house price growth (see p. 34–39 in LeSage and Pace, 2009).
+
+Again, we can manually compute the impacts and confirm the results with the package estimation.
+
+```{r}
+n <- nrow(dat1)
+In <- diag(n)
+rho <- fit.sdm$rho
+beta <- as.matrix(fit.sdm$coefficients)
+
+SW <- solve(In - rho*W)%*%(In*beta[2] + W*beta[3])
+row.names(SW) <- dat1$MS.name ; colnames(SW) <- dat1$MS.name
+
+```
+
+```{r, warning=FALSE}
+
+# 'average direct effect'
+M2_dir <- 1/n*sum(diag(SW)) ; M2_dir
+
+```
+
+The value above corresponds to the coefficient for the growth rate in housing stock we discussed earlier and thus, provides for a nice sanity check of the results.
+
+```{r, warning=FALSE}
+# 'average total effect'
+iota <- as.matrix(rep(1, n))
+M2_tot <- 1/n*t(iota)%*%SW%*%iota ; M2_tot
+
+# 'average indirect effect'
+M2_indir <- M2_tot - M2_dir ; M2_indir
+
+# with the 'spdep' package
+coefs <- impacts(fit.sdm, listw = W_listw, R = 500) ; coefs
+
+```
+
+With the package estimation we also easily get a nice summary of the impacts:
+
+```{r}
+summary(coefs, short = TRUE, zstats = TRUE)
+```
+
+Again, both methods lead to the same results, as one would expect.
+
+c) Investigate the impact of an increase in the housing stock growth to 10% in the following regions: Basel-Stadt, Unteres Baselbiet, Oberes Baselbiet, Zürich, Zimmerberg, Pfannenstiel, Genève, Lausanne. Plot a map that shows the response of house price changes and their spatial diffusion.
+
+#### First step: get fitted values 
+This can be done with the following equation: $E(Y_1) = (I_n-\rho W)^{-1}(X_1\beta + WX_1 \lambda)$
+
+```{r}
+X1 <- cbind(1, dat1$dlstock)
+fitted1 <- solve(In - rho*W)%*%(X1%*%beta[c(1,2)]+WX*beta[3])
+```
+
+#### Second step: introduce a shock to regressor matrix and get the updated fitted values 
+Again, we use the following equation to compute the updated values: $E(Y_2) = (I_n-\rho W)^{-1}(X_2\beta + WX_2 \lambda)$
+
+```{r}
+X2 <- X1
+row.names(X2) <- dat1$MS.name
+# shock the regions Basel-Stadt, Unteres Baselbiet, Zürich, Zimmerberg, Pfannenstiel, Genève and Lausanne 
+# (set dlstock to 0.1)
+X2[c("Basel-Stadt", "Unteres Baselbiet", "Zürich", "Zimmerberg", "Pfannenstiel", "Genève", "Lausanne"),  2] <- 0.1 
+fitted2 <- solve(In - rho*W)%*%(X2%*%beta[c(1,2)]+W%*%X2[ , 2]*beta[3])
+```
+
+#### Third step: plot the shock as the difference $E(Y2) - E(Y1)$ on a map.  
+
+The following map shows the response of house price changes and their spatial diffusion:
+
+```{r, echo=FALSE}
+effect <- round((fitted2 - fitted1)*100, 3) # because we are dealing with growth rates in percentages
+plot(CH, col = rgb(0.8, 0, 0, alpha = effect/min(effect)))
+```
+
+As expected from the low value for $\rho$ and the minuscule average indirect effects there is not much spatial diffusion to be observed in the map. The effects are quiet concentrated in the origin of the shock but do not show a strong spillover to the neighboring regions. This can further be confirmed if we look at the regions where the effect was at least 0.01 in magnitude.
+
+```{r}
+effect.table <- as.data.frame(effect[effect <=-0.01, ])
+colnames(effect.table) <- "effect [absolute percentage changes]"
+```
+
+```{r, echo=FALSE}
+kable(effect.table, align = "c") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+  
+```
+

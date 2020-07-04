@@ -7,6 +7,7 @@ categories:
 tags:
   - R code
   - spatial
+metaAlignment: center
 output: blogdown::html_page
 ---
 

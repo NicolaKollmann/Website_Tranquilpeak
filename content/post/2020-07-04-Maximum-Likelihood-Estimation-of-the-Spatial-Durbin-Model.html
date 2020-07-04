@@ -7,6 +7,7 @@ categories:
 tags:
   - R code
   - spatial
+metaAlignment: center
 output: blogdown::html_page
 ---
 
@@ -440,15 +441,15 @@ coefs &lt;- impacts(fit.sdm, listw = W_listw, R = 500) ; coefs</code></pre>
 ## ========================================================
 ## Simulated standard errors
 ##            Direct  Indirect     Total
-## dlstock 0.1151372 0.1892713 0.1596665
+## dlstock 0.1092169 0.1884122 0.1543999
 ## 
 ## Simulated z-values:
-##            Direct   Indirect     Total
-## dlstock -2.206071 0.07324008 -1.504002
+##            Direct    Indirect     Total
+## dlstock -2.268153 -0.07395651 -1.694657
 ## 
 ## Simulated p-values:
-##         Direct   Indirect Total  
-## dlstock 0.027379 0.94162  0.13258</code></pre>
+##         Direct  Indirect Total  
+## dlstock 0.02332 0.94104  0.09014</code></pre>
 <p>Again, both methods lead to the same results, as one would expect.</p>
 <ol start="3" style="list-style-type: lower-alpha">
 <li>Investigate the impact of an increase in the housing stock growth to 10% in the following regions: Basel-Stadt, Unteres Baselbiet, Oberes Baselbiet, Zürich, Zimmerberg, Pfannenstiel, Genève, Lausanne. Plot a map that shows the response of house price changes and their spatial diffusion.</li>

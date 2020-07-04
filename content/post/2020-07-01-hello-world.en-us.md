@@ -7,6 +7,7 @@ categories: []
 tags: []
 keywords:
   - blog
+metaAlignment: center
 ---
 
 This is a test post for my upcoming blog. :smile:

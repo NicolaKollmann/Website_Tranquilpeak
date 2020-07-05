@@ -76,7 +76,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   identifier = "cv"
   name = "CV"
   pre = "<i class=\"sidebar-button-icon fa fa-lg fa-file-text\"></i>"
-  url = "/files/CV.pdf"
+  url = "/files/CV.html"
 [[menu.main]]
   weight = 6
   identifier = "about"

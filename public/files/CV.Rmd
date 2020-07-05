@@ -1,0 +1,205 @@
+---
+title: "Nicola Kollmanns's CV"
+author: Nicola Kollmann
+date: "`r Sys.Date()`"
+output:
+  pagedown::html_resume:
+    # set it to true for a self-contained HTML page but it'll take longer to render
+    self_contained: false
+# uncomment this line to produce HTML and PDF in RStudio:
+#knit: pagedown::chrome_print
+---
+
+Aside
+================================================================================
+
+
+![Nicola Kollmann](https://avatars3.githubusercontent.com/u/57948862?s=460&u=258033fc01717effe401fe98fa3bf70054d66d00&v=4){width=80%}
+
+
+Contact Info {#contact}
+--------------------------------------------------------------------------------
+
+- For more information, please contact me via [email](mailto:nicola@kollmann.li).
+
+
+Skills {#skills}
+--------------------------------------------------------------------------------
+
+- Experienced in statistical analysis, statistical learning models, and optimization methods.
+
+- Full experience with next generation sequencing data analysis.
+
+- Highly skilled in R, Stata, LaTeX
+
+
+Disclaimer {#disclaimer}
+--------------------------------------------------------------------------------
+
+This CV was crafted with [**pagedown**](https://github.com/rstudio/pagedown).  
+
+Find the source of this CV on [**Github**](https://github.com/NicolaKollmann/CV).
+
+References available on request.
+
+Last updated on `r Sys.Date()`.
+
+
+
+Main
+================================================================================
+
+Nicola Kollmann {#title}
+--------------------------------------------------------------------------------
+
+
+<i class="fa fa-mobile"></i> &nbsp; +423 789 23 11 &nbsp;|&nbsp; <i class="fa fa-envelope"></i> nicola@kollmann.li &nbsp;|&nbsp; [<i class="fa fa-linkedin"></i>](https://www.linkedin.com/in/nicola-andreas-kollmann-546b06128/) &nbsp;|&nbsp; [<i class="fa fa-twitter"></i>](https://twitter.com/NicolaKollmann) &nbsp;|&nbsp; [<i class="fa fa-github"></i>](https://github.com/NicolaKollmann)  
+
+A 25-year-old Banking and Finance graduate with a special interest for corporate finance and research.
+A curious mind and the ability to solve complex problems in an analytic way are my strengths.
+Playing football on an international level confirmed my belief that team work is the key to achieve high goals in life.
+
+
+Education {data-icon=graduation-cap data-concise=true}
+--------------------------------------------------------------------------------
+
+### University of St.Gallen (HSG)
+
+PhD in Finance
+
+St.Gallen, Switzerland
+
+currently
+
+### University of St.Gallen (HSG)
+
+Master of Arts HSG in Banking and Finance
+
+St.Gallen, Switzerland
+
+2018
+
+Thesis: Dyadic wavelet and its application in edge detection
+
+### BI Norwegian Business School
+
+Exchange Semester
+
+Oslo, Norway
+
+2017
+
+### University of Bern
+
+Bachelor of Science in Business Administration
+
+Bern, Switzerland
+
+2016
+
+Research Experience {data-icon=laptop}
+--------------------------------------------------------------------------------
+
+### Graduate Research Associate
+
+Competence Center of Corporate Finance
+
+St.Gallen, Switzerland
+
+currently - 2018
+
+- Performed computational biology research towards understanding regulation of alternative splicing in human and mouse transcriptome.
+- Found EGFR pathway related mutations, aimed to understand the impacts of cancer mutations on EGFR signaling pathway.
+
+
+Professional Experience {data-icon=suitcase}
+--------------------------------------------------------------------------------
+
+### Business Development Associate
+
+Lopag Trust reg.
+
+Ruggell, Liechtenstein
+
+2018
+
+::: concise
+- Taught R language to beginners. 
+- Wrote Shiny app demos.
+- Converted statistical tutorials from SPSS to R language.
+:::
+
+### Financial Services, intern
+
+Lopag Trust reg
+
+Ruggell, Liechtenstein
+
+2016 - 2015
+
+::: concise
+- Analyzed whole-exome sequencing data. 
+- Wrote analysis pipelines of ChIP-seq, single cell DNA-seq and single cell RNA-seq.
+- Studied tumor metastasis and wrote research reports. 
+- Also did case studies to identify the genetic defect causing rare disease.
+:::
+
+### Group Accounting, intern
+
+Hilti AG
+
+Schaan, Liechtenstein
+
+2014
+
+::: concise
+- Analyzed whole-exome sequencing data. 
+- Wrote analysis pipelines of ChIP-seq, single cell DNA-seq and single cell RNA-seq.
+- Studied tumor metastasis and wrote research reports. 
+- Also did case studies to identify the genetic defect causing rare disease.
+:::
+
+
+
+Teaching Experience {data-icon=chalkboard-teacher}
+--------------------------------------------------------------------------------
+
+### Introduction to R Language for Beginners.
+
+Instructor of R and Data Mining Training Courses at SupStat Inc.
+
+Beijing, China
+
+2014
+
+### Computational Biology and Bioinformatics.
+
+Teaching assistant of GBS CB2-201 courses at UAB
+
+AL, USA
+
+2016 - 2017
+
+
+Selected Publications and Posters {data-icon=file}
+--------------------------------------------------------------------------------
+
+### Genetic and epigenetic signals are found predictive to the distribution of intra-individual divergence of alternative splicing.
+
+Poster for 2013 International Conference of Genomics
+
+Qingdao, China
+
+2014
+
+**Yu L**, Chen B, Zhang Z.
+
+### ESCRT-0 complex modulates Rbf mutant cell survival by regulating Rhomboid endosomal trafficking and EGFR signaling.
+
+J Cell Sci. 2016 May 15;129(10):2075-84.
+
+N/A
+
+2016 
+
+Sheng Z, **Yu L**, Zhang T, Pei X, Li X, Zhang Z and Du W. 

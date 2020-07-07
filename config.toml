@@ -96,7 +96,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   identifier = "linkedin"
   name = "LinkedIn"
   pre = "<i class=\"sidebar-button-icon fa fa-lg fa-linkedin\"></i>"
-  url = "https://www.linkedin.com/in/nicola-andreas-kollmann-546b06128/"
+  url = "https://www.linkedin.com/in/nicolakollmann/"
 [[menu.links]]
   weight = 3
   identifier = "github"
